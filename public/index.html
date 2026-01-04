@@ -4,8 +4,50 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Dice</title>
+        <style>
+            body {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100dvh;
+                margin: 0;
+                gap: 1rem;
+            }
+            #dice {
+                flex: 3;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 40vh;
+            }
+            #actions {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            #roll-button {
+                padding: 2vh 4vh;
+                font-size: 10vh;
+                cursor: pointer;
+            }
+        </style>
     </head>
     <body>
-        <h1 id="heading">Hello, Dice</h1>
+        <div id="dice">?</div>
+        <div id="actions">
+            <button id="roll-button">Roll</button>
+        </div>
     </body>
+    <script>
+        const FACES = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+        const dice = document.getElementById("dice");
+        const rollButton = document.getElementById("roll-button");
+
+        rollButton.addEventListener("click", () => {
+            const randomNumber = Math.floor(Math.random() * FACES.length);
+            dice.textContent = FACES[randomNumber];
+        });
+    </script>
 </html>
