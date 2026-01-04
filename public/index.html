@@ -2,7 +2,10 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
         <title>Dice</title>
         <style>
             body {
@@ -13,6 +16,7 @@
                 height: 100dvh;
                 margin: 0;
                 gap: 1rem;
+                touch-action: manipulation;
             }
             #dice {
                 flex: 3;
@@ -20,8 +24,9 @@
                 align-items: center;
                 justify-content: center;
                 align-content: center;
-                font-size: 30vh;
+                font-size: min(30vh, 30vw);
                 gap: 1vh;
+                width: 100%;
             }
             #actions {
                 flex: 1;
@@ -32,12 +37,13 @@
             }
             button {
                 padding: 2vh 4vh;
-                font-size: 10vh;
+                font-size: min(10vh, 8vw);
                 cursor: pointer;
+                touch-action: manipulation;
             }
             #minus-button,
             #plus-button {
-                width: 15vh;
+                width: min(15vh, 20vw);
             }
         </style>
     </head>
