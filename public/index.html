@@ -47,6 +47,25 @@
                     color: white;
                 }
             }
+            #update-notification {
+                position: fixed;
+                top: 1rem;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #4caf50;
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 1000;
+                font-size: 1rem;
+                cursor: pointer;
+                touch-action: manipulation;
+            }
+            #update-notification.show {
+                display: block;
+            }
             #dice {
                 flex: 3;
                 display: grid;
@@ -77,6 +96,7 @@
         </style>
     </head>
     <body>
+        <div id="update-notification">Update available! Tap to refresh.</div>
         <div id="dice">?</div>
         <div id="actions">
             <button id="minus-button">-</button>
@@ -130,7 +150,7 @@
                 diceElements = dice.querySelectorAll("span");
             }
 
-            const totalAnimationTime = 300; // 0.5 seconds in milliseconds
+            const totalAnimationTime = 200; // 0.2 seconds
             const staggerDelay = totalAnimationTime / diceCount;
 
             // Set all dice to 50% opacity before rolling
@@ -181,13 +201,72 @@
         updateButtons();
         rollDice();
 
-        // Register Service Worker for PWA
+        // Register Service Worker for PWA with auto-update support
         if ("serviceWorker" in navigator) {
+            let refreshing = false;
+
+            // Reload page when new service worker takes over
+            navigator.serviceWorker.addEventListener("controllerchange", () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+
             window.addEventListener("load", () => {
                 navigator.serviceWorker
                     .register("/sw.js")
                     .then((registration) => {
                         console.log("Service Worker registered:", registration);
+
+                        // Check for updates every time the page loads
+                        registration.update();
+
+                        // Check for updates periodically (every hour)
+                        setInterval(
+                            () => {
+                                registration.update();
+                            },
+                            60 * 60 * 1000,
+                        );
+
+                        // Handle waiting service worker
+                        const showUpdateNotification = () => {
+                            const notification = document.getElementById(
+                                "update-notification",
+                            );
+                            notification.classList.add("show");
+                            notification.addEventListener("click", () => {
+                                if (registration.waiting) {
+                                    registration.waiting.postMessage({
+                                        type: "SKIP_WAITING",
+                                    });
+                                }
+                            });
+                        };
+
+                        // Check if there's already a waiting service worker
+                        if (registration.waiting) {
+                            showUpdateNotification();
+                        }
+
+                        // Listen for new service worker waiting
+                        registration.addEventListener("updatefound", () => {
+                            const newWorker = registration.installing;
+                            if (newWorker) {
+                                newWorker.addEventListener(
+                                    "statechange",
+                                    () => {
+                                        if (
+                                            newWorker.state === "installed" &&
+                                            navigator.serviceWorker.controller
+                                        ) {
+                                            showUpdateNotification();
+                                        }
+                                    },
+                                );
+                            }
+                        });
                     })
                     .catch((error) => {
                         console.log(
