@@ -1,6 +1,8 @@
-# Dice PWA
+# Dice – a very small app
 
-A simple, elegant dice rolling Progressive Web App (PWA) that works offline and can be installed on any device.
+https://dice.verysmall.app
+
+A simple, elegant dice rolling app.
 
 ## Features
 
