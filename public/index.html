@@ -92,50 +92,94 @@
         const plusButton = document.getElementById("plus-button");
 
         let diceCount = 1;
+        let isRolling = false;
 
-        function updateDice() {
-            // Calculate grid dimensions (prefer even distribution)
+        // Use crypto.getRandomValues for better randomness
+        function getRandomDiceValue() {
+            const array = new Uint32Array(1);
+            crypto.getRandomValues(array);
+            return array[0] % FACES.length;
+        }
+
+        async function rollDice() {
+            if (isRolling) return;
+
+            isRolling = true;
+            rollButton.disabled = true;
+            minusButton.disabled = true;
+            plusButton.disabled = true;
+
+            // Calculate grid dimensions
             const cols = Math.ceil(Math.sqrt(diceCount));
             const rows = Math.ceil(diceCount / cols);
 
             dice.style.gridTemplateColumns = `repeat(${cols}, auto)`;
             dice.style.gridTemplateRows = `repeat(${rows}, auto)`;
 
-            const results = [];
-            for (let i = 0; i < diceCount; i++) {
-                const randomNumber = Math.floor(Math.random() * FACES.length);
-                results.push(`<span>${FACES[randomNumber]}</span>`);
+            // Get existing dice elements or create new ones
+            let diceElements = dice.querySelectorAll("span");
+
+            // If dice count changed, rebuild the grid
+            if (diceElements.length !== diceCount) {
+                const spans = [];
+                for (let i = 0; i < diceCount; i++) {
+                    const randomNumber = getRandomDiceValue();
+                    spans.push(`<span>${FACES[randomNumber]}</span>`);
+                }
+                dice.innerHTML = spans.join("");
+                diceElements = dice.querySelectorAll("span");
             }
-            dice.innerHTML = results.join("");
+
+            const totalAnimationTime = 300; // 0.5 seconds in milliseconds
+            const staggerDelay = totalAnimationTime / diceCount;
+
+            // Set all dice to 50% opacity before rolling
+            for (let i = 0; i < diceCount; i++) {
+                diceElements[i].style.opacity = "0.5";
+            }
+
+            // Roll each die with a stagger
+            for (let i = 0; i < diceCount; i++) {
+                await new Promise((resolve) =>
+                    setTimeout(resolve, staggerDelay),
+                );
+                const randomNumber = getRandomDiceValue();
+                diceElements[i].textContent = FACES[randomNumber];
+                diceElements[i].style.opacity = "1";
+            }
+
+            isRolling = false;
+            updateButtons();
         }
 
         function updateButtons() {
-            minusButton.disabled = diceCount <= 1;
-            plusButton.disabled = diceCount >= 6;
+            if (!isRolling) {
+                rollButton.disabled = false;
+                minusButton.disabled = diceCount <= 1;
+                plusButton.disabled = diceCount >= 6;
+            }
         }
 
         rollButton.addEventListener("click", () => {
-            updateDice();
+            rollDice();
         });
 
         minusButton.addEventListener("click", () => {
             if (diceCount > 1) {
                 diceCount--;
-                updateDice();
-                updateButtons();
+                rollDice();
             }
         });
 
         plusButton.addEventListener("click", () => {
             if (diceCount < 6) {
                 diceCount++;
-                updateDice();
-                updateButtons();
+                rollDice();
             }
         });
 
         updateButtons();
-        updateDice();
+        rollDice();
 
         // Register Service Worker for PWA
         if ("serviceWorker" in navigator) {
