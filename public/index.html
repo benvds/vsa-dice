@@ -16,38 +16,90 @@
             }
             #dice {
                 flex: 3;
-                display: flex;
+                display: grid;
                 align-items: center;
                 justify-content: center;
-                font-size: 40vh;
+                align-content: center;
+                font-size: 30vh;
+                gap: 1vh;
             }
             #actions {
                 flex: 1;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                gap: 2vh;
             }
-            #roll-button {
+            button {
                 padding: 2vh 4vh;
                 font-size: 10vh;
                 cursor: pointer;
+            }
+            #minus-button,
+            #plus-button {
+                width: 15vh;
             }
         </style>
     </head>
     <body>
         <div id="dice">?</div>
         <div id="actions">
+            <button id="minus-button">-</button>
             <button id="roll-button">Roll</button>
+            <button id="plus-button">+</button>
         </div>
     </body>
     <script>
         const FACES = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
         const dice = document.getElementById("dice");
         const rollButton = document.getElementById("roll-button");
+        const minusButton = document.getElementById("minus-button");
+        const plusButton = document.getElementById("plus-button");
+
+        let diceCount = 1;
+
+        function updateDice() {
+            // Calculate grid dimensions (prefer even distribution)
+            const cols = Math.ceil(Math.sqrt(diceCount));
+            const rows = Math.ceil(diceCount / cols);
+
+            dice.style.gridTemplateColumns = `repeat(${cols}, auto)`;
+            dice.style.gridTemplateRows = `repeat(${rows}, auto)`;
+
+            const results = [];
+            for (let i = 0; i < diceCount; i++) {
+                const randomNumber = Math.floor(Math.random() * FACES.length);
+                results.push(`<span>${FACES[randomNumber]}</span>`);
+            }
+            dice.innerHTML = results.join("");
+        }
+
+        function updateButtons() {
+            minusButton.disabled = diceCount <= 1;
+            plusButton.disabled = diceCount >= 6;
+        }
 
         rollButton.addEventListener("click", () => {
-            const randomNumber = Math.floor(Math.random() * FACES.length);
-            dice.textContent = FACES[randomNumber];
+            updateDice();
         });
+
+        minusButton.addEventListener("click", () => {
+            if (diceCount > 1) {
+                diceCount--;
+                updateDice();
+                updateButtons();
+            }
+        });
+
+        plusButton.addEventListener("click", () => {
+            if (diceCount < 6) {
+                diceCount++;
+                updateDice();
+                updateButtons();
+            }
+        });
+
+        updateButtons();
+        updateDice();
     </script>
 </html>
